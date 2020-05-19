@@ -27,13 +27,41 @@ namespace Leave_Management.Controllers
             return View(model);
         }
 
-        // GET: LeaveType/Create
-        public ActionResult Create()
+        // GET: LeaveType/Details/5
+        public ActionResult Details(int id)
         {
-            return View();
+            var model = _uow.LeaveType.GetFirstOrDefault(u => u.Id == id);
+            if (model == null)
+            {
+                return NotFound();
+            }
+
+            var models = _mapper.Map<LeaveTypeVM>(model);
+
+            return View(models);
         }
 
-        // POST: LeaveType/Create
+        // GET: LeaveType
+        public ActionResult Create(int? id)
+        {
+            if (id == null)
+            {
+                //Create
+                return View(new LeaveTypeVM());
+            }
+            //Update
+
+            var model = _uow.LeaveType.GetFirstOrDefault(u => u.Id == id);
+            var leaveTypeVm = _mapper.Map<LeaveTypeVM>(model);
+
+            if (leaveTypeVm == null)
+            {
+                return NotFound();
+            }
+            return View(leaveTypeVm);
+        }
+
+        // POST: LeaveType/Create/Update
         [HttpPost]
         [ValidateAntiForgeryToken]
         public ActionResult Create(LeaveTypeVM model)
@@ -45,17 +73,63 @@ namespace Leave_Management.Controllers
                     return View(model);
                 }
 
-                var leaveType = _mapper.Map<LeaveType>(model);
-                leaveType.DateCreated = DateTime.Now;
-                _uow.LeaveType.Create(leaveType);
+                if (model.Id == 0) //Create
+                {
+
+                    var leaveType = _mapper.Map<LeaveType>(model);
+                    leaveType.DateCreated = DateTime.Now;
+                    _uow.LeaveType.Create(leaveType);
+                }
+                else // Update
+                {
+                    var leaveType = _mapper.Map<LeaveType>(model);
+                    _uow.LeaveType.Update(leaveType);
+                }
                 _uow.Save();
                 return RedirectToAction(nameof(Index));
             }
             catch
             {
-                return View();
+                return View(model);
             }
         }
 
+        // GET: LeaveType/Delete/5
+        public ActionResult Delete(int id)
+        {
+
+            var model = _uow.LeaveType.GetFirstOrDefault(u => u.Id == id);
+            if (model == null)
+            {
+                return NotFound();
+            }
+
+            var models = _mapper.Map<LeaveTypeVM>(model);
+
+            return View(models);
+        }
+
+        // POST: LeaveType/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Delete(int id, LeaveTypeVM model)
+        {
+            try
+            {
+                var leaveType = _uow.LeaveType.GetFirstOrDefault(u => u.Id == id);
+                if (leaveType == null)
+                {
+                    return NotFound();
+                }
+
+                _uow.LeaveType.Delete(leaveType);
+                _uow.Save();
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                return View(model);
+            }
+        }
     }
 }

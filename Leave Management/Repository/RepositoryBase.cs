@@ -1,11 +1,10 @@
-﻿using System;
+﻿using Leave_Management.Contracts;
+using Leave_Management.Data;
+using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
-using Leave_Management.Contracts;
-using Leave_Management.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace Leave_Management.Repository
 {
@@ -28,11 +27,6 @@ namespace Leave_Management.Repository
         public void Create(T entity)
         {
             dbSet.Add(entity);
-        }
-
-        public T FindById(int id)
-        {
-            return dbSet.Find(id);
         }
 
         public IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, string includeProperties = null)
@@ -58,12 +52,33 @@ namespace Leave_Management.Repository
             }
             return query.ToList();
         }
-        
+
+
+        public T GetFirstOrDefault(Expression<Func<T, bool>> filter = null, string includeProperties = null)
+        {
+            IQueryable<T> query = dbSet;
+
+            if (filter != null)
+            {
+                query = query.Where(filter);
+            }
+
+            if (includeProperties != null)
+            {
+                foreach (var item in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(item);
+                }
+            }
+            return query.FirstOrDefault();
+        }
+
+
         public void Delete(T entity)
         {
             dbSet.Remove(entity);
         }
-        
+
         public void Update(T entity)
         {
             dbSet.Update(entity);

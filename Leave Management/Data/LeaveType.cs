@@ -9,6 +9,6 @@ namespace Leave_Management.Data
         public int Id { get; set; }
         [Required]
         public string Name { get; set; }
-        public DateTime DateCreated { get; set; }
+        public DateTime? DateCreated { get; set; }
     }
 }
