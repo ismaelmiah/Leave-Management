@@ -28,6 +28,10 @@ namespace Leave_Management.Repository
         {
             dbSet.Add(entity);
         }
+        public T Get(int id)
+        {
+            return dbSet.Find(id);
+        }
 
         public IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, string includeProperties = null)
         {

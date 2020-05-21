@@ -7,6 +7,7 @@ namespace Leave_Management.Contracts
 {
     public interface IRepositoryBase<T> where T : class
     {
+        T Get(int id);
         IEnumerable<T> GetAll(
             Expression<Func<T, bool>> filter = null,
             Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,

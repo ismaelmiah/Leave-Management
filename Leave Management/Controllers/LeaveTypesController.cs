@@ -19,12 +19,34 @@ namespace Leave_Management.Controllers
             _uow = uow;
             _mapper = mapper;
         }
-        // GET: LeaveType
-        public ActionResult Index()
+
+        #region API Calls
+
+        public IActionResult GetAll()
         {
             var leaveType = _uow.LeaveType.GetAll().ToList();
             var model = _mapper.Map<List<LeaveType>, List<LeaveTypeVM>>(leaveType);
-            return View(model);
+            return Json(new { data = model });
+
+        }
+
+        // GET: LeaveType/Delete/5
+        [HttpDelete]
+        public IActionResult Delete(int id)
+        {
+            var Data = _uow.LeaveType.Get(id);
+            if (Data == null)
+                return Json(new { success = false, message = "Data Not Found!" });
+            _uow.LeaveType.Delete(Data);
+            _uow.Save();
+            return Json(new { success = true, message = "Delete Operation Successfully" });
+        }
+        #endregion
+
+        // GET: LeaveType
+        public ActionResult Index()
+        {
+            return View();
         }
 
         // GET: LeaveType/Details/5
@@ -75,54 +97,17 @@ namespace Leave_Management.Controllers
 
                 if (model.Id == 0) //Create
                 {
-
+                    TempData["result"] = "Create";
                     var leaveType = _mapper.Map<LeaveType>(model);
                     leaveType.DateCreated = DateTime.Now;
                     _uow.LeaveType.Create(leaveType);
                 }
                 else // Update
                 {
+                    TempData["result"] = "Update";
                     var leaveType = _mapper.Map<LeaveType>(model);
                     _uow.LeaveType.Update(leaveType);
                 }
-                _uow.Save();
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View(model);
-            }
-        }
-
-        // GET: LeaveType/Delete/5
-        public ActionResult Delete(int id)
-        {
-
-            var model = _uow.LeaveType.GetFirstOrDefault(u => u.Id == id);
-            if (model == null)
-            {
-                return NotFound();
-            }
-
-            var models = _mapper.Map<LeaveTypeVM>(model);
-
-            return View(models);
-        }
-
-        // POST: LeaveType/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, LeaveTypeVM model)
-        {
-            try
-            {
-                var leaveType = _uow.LeaveType.GetFirstOrDefault(u => u.Id == id);
-                if (leaveType == null)
-                {
-                    return NotFound();
-                }
-
-                _uow.LeaveType.Delete(leaveType);
                 _uow.Save();
                 return RedirectToAction(nameof(Index));
             }
