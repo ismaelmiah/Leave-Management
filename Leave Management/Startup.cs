@@ -28,7 +28,8 @@ namespace Leave_Management
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
                     Configuration.GetConnectionString("DefaultConnection")));
-            services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
+            services.AddDefaultIdentity<IdentityUser>()
+                .AddRoles<IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             //Add references for Repository and Contracts to Startup files
@@ -39,7 +40,11 @@ namespace Leave_Management
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(
+            IApplicationBuilder app,
+            IWebHostEnvironment env,
+            RoleManager<IdentityRole> roleManager,
+            UserManager<IdentityUser> userManager)
         {
             if (env.IsDevelopment())
             {
@@ -59,6 +64,9 @@ namespace Leave_Management
 
             app.UseAuthentication();
             app.UseAuthorization();
+
+            //Initialize User Roles
+            SeedData.Seed(roleManager, userManager);
 
             app.UseEndpoints(endpoints =>
             {
