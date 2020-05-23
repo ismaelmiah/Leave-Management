@@ -4,11 +4,11 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Leave_Management.Models
 {
-    public class LeaveHistoryVM
+    public class LeaveHistoryVm
     {
         public int Id { get; set; }
 
-        public EmployeeVM RequestingEmployee { get; set; }
+        public EmployeeVm RequestingEmployee { get; set; }
         public string RequestingEmployeeId { get; set; }
         [Required]
         public DateTime StartDate { get; set; }
@@ -20,7 +20,7 @@ namespace Leave_Management.Models
         public DateTime DateRequested { get; set; }
         public DateTime DateActioned { get; set; }
         public bool? Approved { get; set; }
-        public EmployeeVM ApprovedBy { get; set; }
+        public EmployeeVm ApprovedBy { get; set; }
         public string ApprovedById { get; set; }
     }
 }

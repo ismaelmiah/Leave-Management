@@ -12,6 +12,10 @@ namespace Leave_Management.Contracts
             Expression<Func<T, bool>> filter = null,
             Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
             string includeProperties = null);
+        T GetAllWithTwoEntity(
+            Expression<Func<T, bool>> filter = null,
+            Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
+            string includeProperties = null, string includeProperty = null);
 
         T GetFirstOrDefault(Expression<Func<T, bool>> filter = null,
             string includeProperties = null);

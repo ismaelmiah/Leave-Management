@@ -7,24 +7,19 @@ $(document).ready(function () {
 function loadDataTable() {
     dataTable = $('#tblData').DataTable({
         "ajax": {
-            "url": "/LeaveTypes/GetAll"
+            "url": "/LeaveAllocations/GetAll"
         },
         "columns": [
-            { "data": "name", "width": "40%" },
-            { "data": "defaultDays", "width": "40%" },
+            { "data": "firstname", "width": "20%" },
+            { "data": "lastname", "width": "20%" },
+            { "data": "email", "width": "40%" },
             {
                 "data": "id",
                 "render": function (data) {
                     return `
                             <div class="text-center">
-                                <a href="/leaveTypes/Create/${data}" class="btn btn-warning text-white" style="cursor:pointer">
-                                    <i class="fas fa-edit"></i> 
-                                </a>
-                                <a href="/leaveTypes/Details/${data}" class="btn btn-primary text-white" style="cursor:pointer">
-                                    <i class="fas fa-info-circle"></i> 
-                                </a>
-                                <a onclick=Delete("/leaveTypes/Delete/${data}") class="btn btn-danger text-white" style="cursor:pointer">
-                                    <i class="fas fa-trash-alt"></i> 
+                                <a href="/leaveAllocations/Details/${data}" class="btn btn-outline-success" style="cursor:pointer">
+                                    <i class="fas fa-search"></i>Details 
                                 </a>
                             </div>
                            `;

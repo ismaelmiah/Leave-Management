@@ -1,4 +1,9 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@using Leave_Management.Data
+@inject SignInManager<Employee> SignInManager
+@inject UserManager<Employee> UserManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
@@ -32,20 +37,27 @@
                         <li class="nav-item">
                             <a class="nav-link text-white" asp-area="" asp-controller="" asp-action="">Apply For Leave</a>
                         </li>
-                        <li class="nav-item dropdown">
-                            <div class="btn-group">
-                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="navBarDropdownMenuLink" role="button">
-                                    Manage
-                                </a>
-                                <div class="dropdown-menu" area-labelledby="navBarDropdownMenuLink">
-                                    <a class="dropdown-item" asp-action="Index" asp-controller="LeaveTypes">Leave Types</a>
-                                    <a class="dropdown-item" href="#">Leave Allocations</a>
-                                    <a class="dropdown-item" href="#">Leave Applications</a>
-                                    <div class="dropdown-divider"></div>
-                                    <a class="dropdown-item" href="#">Employees</a>
-                                </div>
-                            </div>
-                        </li>
+                        @if (SignInManager.IsSignedIn(User))
+                        {
+                            if (User.IsInRole("Administrator"))
+                            {
+
+                                <li class="nav-item dropdown">
+                                    <div class="btn-group">
+                                        <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" id="navBarDropdownMenuLink" role="button">
+                                            Manage
+                                        </a>
+                                        <div class="dropdown-menu" area-labelledby="navBarDropdownMenuLink">
+                                            <a class="dropdown-item" asp-action="Index" asp-controller="LeaveTypes">Leave Types</a>
+                                            <a class="dropdown-item" asp-action="Index" asp-controller="LeaveAllocations">Leave Allocations</a>
+                                            <a class="dropdown-item" href="#">Leave Applications</a>
+                                            <div class="dropdown-divider"></div>
+                                            <a class="dropdown-item" asp-controller="LeaveAllocations" asp-action="ListEmployee">Employees</a>
+                                        </div>
+                                    </div>
+                                </li>
+                            }
+                        }
                     </ul>
                 </div>
             </div>

@@ -87,5 +87,26 @@ namespace Leave_Management.Repository
         {
             dbSet.Update(entity);
         }
+
+        public T GetAllWithTwoEntity(Expression<Func<T, bool>> filter = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, string includeProperties = null, string includeProperty = null)
+        {
+            IQueryable<T> query = dbSet;
+            if (includeProperties != null)
+            {
+                foreach (var item in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(item);
+                }
+            }
+            if (includeProperty != null)
+            {
+                foreach (var item in includeProperty.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(item);
+                }
+            }
+
+            return query.FirstOrDefault(filter);
+        }
     }
 }

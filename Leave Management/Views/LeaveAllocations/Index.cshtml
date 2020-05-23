@@ -1,12 +1,11 @@
-﻿@model IEnumerable<Leave_Management.Models.LeaveTypeVM>
-
+﻿@model Leave_Management.Models.CreateLeaveAllocationVM
 @{
     ViewData["Title"] = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 <div class="row">
     <div class="col-6">
-        <h2 class="text-primary">Leave Types List </h2>
+        <h2 class="text-primary">Leave Allocations List </h2>
     </div>
     <div class="col-6 text-right">
         <a class="btn btn-success" asp-action="Create"><i class="fas fa-plus"></i> &nbsp; Create New Leave Type</a>
@@ -18,19 +17,27 @@
         <thead class="thead-dark">
             <tr class="table-info">
                 <th>
-                    @Html.DisplayNameFor(model => model.Name)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.DefaultDays)
+                    Leave Types
                 </th>
                 <th>Action</th>
             </tr>
         </thead>
+        <tbody>
+            @foreach (var item in Model.LeaveTypes)
+            {
+                <tr>
+                    <td>@item.Name</td>
+                    <td>
+                        <a asp-action="SetLeave" asp-route-id="@item.Id" class="btn btn-outline-success"><i class="fas fa-edit"></i>Allocate To Employee</a>
+                        <!--Html.ActionLink("Allocate To You", "SetLeave", new {item.Id})-->
+                    </td>
+                </tr>
+            }
+        </tbody>
     </table>
 </div>
 
 @section Scripts{
-    <script src="~/js/Leavetypes.js"></script>
     <script>
         $(function () {
             var save = '@TempData["result"]';
@@ -44,3 +51,4 @@
         })
     </script>
 }
+
