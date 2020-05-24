@@ -11,7 +11,7 @@ namespace Leave_Management.Contracts
         IEnumerable<T> GetAll(
             Expression<Func<T, bool>> filter = null,
             Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
-            string includeProperties = null);
+            string includeProperties = null, string includeProperty = null, string includeProperte = null);
         T GetAllWithTwoEntity(
             Expression<Func<T, bool>> filter = null,
             Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,

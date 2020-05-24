@@ -33,7 +33,7 @@ namespace Leave_Management.Repository
             return dbSet.Find(id);
         }
 
-        public IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, string includeProperties = null)
+        public IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, string includeProperties = null, string includeProperty = null, string includeProperte = null)
         {
             IQueryable<T> query = dbSet;
 
@@ -45,6 +45,23 @@ namespace Leave_Management.Repository
             if (includeProperties != null)
             {
                 foreach (var item in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(item);
+                }
+            }
+
+
+            if (includeProperte != null)
+            {
+                foreach (var item in includeProperte.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(item);
+                }
+            }
+
+            if (includeProperty != null)
+            {
+                foreach (var item in includeProperty.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     query = query.Include(item);
                 }

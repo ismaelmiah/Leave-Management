@@ -35,7 +35,10 @@
                             <a class="nav-link text-white" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link text-white" asp-area="" asp-controller="" asp-action="">Apply For Leave</a>
+                            <a class="nav-link text-white" asp-area="" asp-controller="LeaveRequests" asp-action="Upsert">Apply For Leave</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-white" asp-area="" asp-controller="LeaveRequests" asp-action="MyLeave">My Leave</a>
                         </li>
                         @if (SignInManager.IsSignedIn(User))
                         {
@@ -50,7 +53,7 @@
                                         <div class="dropdown-menu" area-labelledby="navBarDropdownMenuLink">
                                             <a class="dropdown-item" asp-action="Index" asp-controller="LeaveTypes">Leave Types</a>
                                             <a class="dropdown-item" asp-action="Index" asp-controller="LeaveAllocations">Leave Allocations</a>
-                                            <a class="dropdown-item" href="#">Leave Applications</a>
+                                            <a class="dropdown-item" asp-action="Index" asp-controller="LeaveRequests">Leave Applications</a>
                                             <div class="dropdown-divider"></div>
                                             <a class="dropdown-item" asp-controller="LeaveAllocations" asp-action="ListEmployee">Employees</a>
                                         </div>

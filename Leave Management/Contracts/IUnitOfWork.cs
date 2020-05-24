@@ -8,7 +8,7 @@ namespace Leave_Management.Contracts
     public interface IUnitOfWork : IDisposable
     {
         ILeaveTypeRepository LeaveType { get; }
-        ILeaveHistoryRepository LeaveHistory { get; }
+        ILeaveRequestRepository LeaveRequest { get; }
         ILeaveAllocationRepository LeaveAllocation { get; }
         void Save();
     }

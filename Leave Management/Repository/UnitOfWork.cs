@@ -10,12 +10,12 @@ namespace Leave_Management.Repository
         {
             _db = db;
             LeaveType = new LeaveTypeRepository(_db);
-            LeaveHistory = new LeaveHistoryRepository(_db);
+            LeaveRequest = new LeaveRequestRepository(_db);
             LeaveAllocation = new LeaveAllocationRepository(_db);
         }
 
         public ILeaveTypeRepository LeaveType { get; private set; }
-        public ILeaveHistoryRepository LeaveHistory { get; private set; }
+        public ILeaveRequestRepository LeaveRequest { get; private set; }
         public ILeaveAllocationRepository LeaveAllocation { get; private set; }
 
         public void Dispose()

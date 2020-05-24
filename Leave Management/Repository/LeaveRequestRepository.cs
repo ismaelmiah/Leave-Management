@@ -3,11 +3,11 @@ using Leave_Management.Data;
 
 namespace Leave_Management.Repository
 {
-    public class LeaveHistoryRepository : RepositoryBase<LeaveHistory>, ILeaveHistoryRepository
+    public class LeaveRequestRepository : RepositoryBase<LeaveRequest>, ILeaveRequestRepository
     {
         private readonly ApplicationDbContext _db;
 
-        public LeaveHistoryRepository(ApplicationDbContext db) : base(db)
+        public LeaveRequestRepository(ApplicationDbContext db) : base(db)
         {
             _db = db;
         }

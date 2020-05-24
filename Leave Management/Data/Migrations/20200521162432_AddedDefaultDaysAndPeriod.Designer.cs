@@ -50,7 +50,7 @@ namespace Leave_Management.Data.Migrations
                     b.ToTable("LeaveAllocations");
                 });
 
-            modelBuilder.Entity("Leave_Management.Data.LeaveHistory", b =>
+            modelBuilder.Entity("Leave_Management.Data.LeaveRequest", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -377,7 +377,7 @@ namespace Leave_Management.Data.Migrations
                         .IsRequired();
                 });
 
-            modelBuilder.Entity("Leave_Management.Data.LeaveHistory", b =>
+            modelBuilder.Entity("Leave_Management.Data.LeaveRequest", b =>
                 {
                     b.HasOne("Leave_Management.Data.Employee", "ApprovedBy")
                         .WithMany()
