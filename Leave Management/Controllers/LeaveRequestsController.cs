@@ -40,7 +40,7 @@ namespace Leave_Management.Controllers
                 RejectedRequest = leaveRequestModel.Count(x => x.Approved == false),
                 LeaveRequest = leaveRequestModel
             };
-            return View(model);
+            return View();
         }
 
         // GET: LeaveRequests/Details/5
@@ -158,7 +158,20 @@ namespace Leave_Management.Controllers
         {
             return View();
         }
-
+        public ActionResult GetAll()
+        {
+            var leaveRequest = _uow.LeaveRequest.GetAll(includeProperties: "LeaveType", includeProperty: "RequestingEmployee", includeProperte: "ApprovedBy");
+            var leaveRequestModel = _mapper.Map<List<LeaveRequestVm>>(leaveRequest);
+            var model = new AdminLeaveRequestVm
+            {
+                TotalRequest = leaveRequestModel.Count,
+                ApprovedRequest = leaveRequestModel.Count(x => x.Approved == true),
+                PendingRequest = leaveRequestModel.Count(x => x.Approved == null),
+                RejectedRequest = leaveRequestModel.Count(x => x.Approved == false),
+                LeaveRequest = leaveRequestModel
+            };
+            return Json(new { data = model });
+        }
         // POST: LeaveRequests/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]

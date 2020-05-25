@@ -2,7 +2,6 @@
 
 @{
     ViewData["Title"] = "Index";
-    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <div class="row">
@@ -10,7 +9,7 @@
         <h2 class="text-primary">Leave Applications List </h2>
     </div>
     <div class="col-6 text-right">
-        <a class="btn btn-success" asp-action="Create"><i class="fas fa-plus"></i> &nbsp; Create New Leave Application</a>
+        <a class="btn btn-success" asp-action="Upsert"><i class="fas fa-plus"></i> &nbsp; Create New Leave Application</a>
     </div>
 </div>
 <br />
