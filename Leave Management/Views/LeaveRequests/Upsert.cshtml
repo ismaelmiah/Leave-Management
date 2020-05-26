@@ -4,9 +4,8 @@
     ViewData["Title"] = "Upsert";
 }
 
-<h1>Upsert</h1>
+<h1>Apply For Leave</h1>
 
-<h4>CreateLeaveRequestVm</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
@@ -35,7 +34,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="RequestComments" class="control-label"></label>
-                <textarea asp-for="RequestComments" class="form-control" />
+                <textarea asp-for="RequestComments" class="form-control"></textarea>
                 <span asp-validation-for="RequestComments" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -46,7 +45,7 @@
 </div>
 
 <div>
-    <a asp-action="Index">Back to List</a>
+    <a asp-action="Index" asp-controller="Home">Back to List</a>
 </div>
 
 @section Scripts

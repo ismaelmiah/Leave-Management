@@ -3,12 +3,12 @@ using Leave_Management.Contracts;
 using Leave_Management.Data;
 using Leave_Management.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Leave_Management.Controllers
 {
@@ -26,7 +26,7 @@ namespace Leave_Management.Controllers
             _mapper = mapper;
         }
         // GET: LeaveAllocation
-        public ActionResult Index()
+        public IActionResult Index()
         {
             var leaveType = _uow.LeaveType.GetAll().ToList();
             var mappsLeaveTypeVms = _mapper.Map<List<LeaveType>, List<LeaveTypeVM>>(leaveType);
@@ -47,19 +47,19 @@ namespace Leave_Management.Controllers
         }
         // GET: LeaveType/Delete/5
         [HttpDelete]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var Data = _uow.LeaveType.Get(id);
-            if (Data == null)
+            var leaveType = await _uow.LeaveType.Get(id);
+            if (leaveType == null)
                 return Json(new { success = false, message = "Data Not Found!" });
-            _uow.LeaveType.Delete(Data);
+            _uow.LeaveType.Delete(leaveType);
             _uow.Save();
             return Json(new { success = true, message = "Delete Operation Successfully" });
         }
         #endregion
 
         // GET: LeaveAllocation/Details/5
-        public ActionResult Details(string id)
+        public IActionResult Details(string id)
         {
             var employees = _mapper.Map<EmployeeVm>(_userManager.FindByIdAsync(id).Result);
             var allocations =
@@ -75,9 +75,9 @@ namespace Leave_Management.Controllers
         }
 
         // GET: LeaveAllocation/Create
-        public ActionResult SetLeave(int id)
+        public async Task<ActionResult> SetLeave(int id)
         {
-            var leavetypes = _uow.LeaveType.Get(id);
+            var leaveTypes = await _uow.LeaveType.Get(id);
             var employees = _userManager.GetUsersInRoleAsync("Employee").Result;
             foreach (var emp in employees)
             {
@@ -88,43 +88,24 @@ namespace Leave_Management.Controllers
                     DateCreated = DateTime.Now,
                     EmployeeId = emp.Id,
                     LeaveTypeId = id,
-                    NumberOfDays = leavetypes.DefaultDays,
+                    NumberOfDays = leaveTypes.DefaultDays,
                     Period = DateTime.Now.Year
                 };
-                var leaveallocation = _mapper.Map<LeaveAllocation>(allocation);
-                _uow.LeaveAllocation.Create(leaveallocation);
+                var leaveAllocation = _mapper.Map<LeaveAllocation>(allocation);
+                _uow.LeaveAllocation.Create(leaveAllocation);
                 _uow.Save();
             }
 
             return RedirectToAction(nameof(Index));
         }
 
-        public ActionResult ListEmployee()
+        public IActionResult ListEmployee()
         {
             return View();
         }
-
-        // POST: LeaveAllocation/Create
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Create(IFormCollection collection)
+        public async Task<ActionResult> Edit(int id)
         {
-            try
-            {
-                // TODO: Add insert logic here
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: LeaveAllocation/Edit/5
-        public ActionResult Edit(int id)
-        {
-            var leaveAllocation = _uow.LeaveAllocation
+            var leaveAllocation = await _uow.LeaveAllocation
                 .GetAllWithTwoEntity((x => x.Id == id), includeProperties: "LeaveType", includeProperty: "Employee");
             var model = _mapper.Map<EditLeaveAllocationVM>(leaveAllocation);
             return View(model);
@@ -133,7 +114,7 @@ namespace Leave_Management.Controllers
         // POST: LeaveAllocation/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, EditLeaveAllocationVM modeEditLeaveAllocationVm)
+        public async Task<IActionResult> Edit(int id, EditLeaveAllocationVM modeEditLeaveAllocationVm)
         {
             try
             {
@@ -142,7 +123,7 @@ namespace Leave_Management.Controllers
                     return View(modeEditLeaveAllocationVm);
                 }
 
-                var record = _uow.LeaveAllocation.Get(id);
+                var record = await _uow.LeaveAllocation.Get(id);
                 record.NumberOfDays = modeEditLeaveAllocationVm.NumberOfDays;
                 _uow.LeaveAllocation.Update(record);
                 _uow.Save();
@@ -155,21 +136,5 @@ namespace Leave_Management.Controllers
             }
         }
 
-        // POST: LeaveAllocation/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                // TODO: Add delete logic here
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
     }
 }

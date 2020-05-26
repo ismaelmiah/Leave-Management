@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Leave_Management.Controllers
 {
@@ -29,17 +30,16 @@ namespace Leave_Management.Controllers
             var leaveType = _uow.LeaveType.GetAll().ToList();
             var model = _mapper.Map<List<LeaveType>, List<LeaveTypeVM>>(leaveType);
             return Json(new { data = model });
-
         }
 
         // GET: LeaveType/Delete/5
         [HttpDelete]
-        public IActionResult Delete(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var Data = _uow.LeaveType.Get(id);
-            if (Data == null)
+            var dataLeaveType = await _uow.LeaveType.Get(id);
+            if (dataLeaveType == null)
                 return Json(new { success = false, message = "Data Not Found!" });
-            _uow.LeaveType.Delete(Data);
+            _uow.LeaveType.Delete(dataLeaveType);
             _uow.Save();
             return Json(new { success = true, message = "Delete Operation Successfully" });
         }
@@ -52,9 +52,9 @@ namespace Leave_Management.Controllers
         }
 
         // GET: LeaveType/Details/5
-        public ActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var model = _uow.LeaveType.GetFirstOrDefault(u => u.Id == id);
+            var model = await _uow.LeaveType.GetFirstOrDefault(u => u.Id == id);
             if (model == null)
             {
                 return NotFound();
@@ -66,7 +66,7 @@ namespace Leave_Management.Controllers
         }
 
         // GET: LeaveType
-        public ActionResult Create(int? id)
+        public async Task<IActionResult> Create(int? id)
         {
             if (id == null)
             {
@@ -75,7 +75,7 @@ namespace Leave_Management.Controllers
             }
             //Update
 
-            var model = _uow.LeaveType.GetFirstOrDefault(u => u.Id == id);
+            var model = await _uow.LeaveType.GetFirstOrDefault(u => u.Id == id);
             var leaveTypeVm = _mapper.Map<LeaveTypeVM>(model);
 
             if (leaveTypeVm == null)
@@ -88,7 +88,7 @@ namespace Leave_Management.Controllers
         // POST: LeaveType/Create/Update
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Create(LeaveTypeVM model)
+        public IActionResult Create(LeaveTypeVM model)
         {
             try
             {

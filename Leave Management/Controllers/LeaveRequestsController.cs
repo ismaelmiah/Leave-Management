@@ -3,13 +3,13 @@ using Leave_Management.Contracts;
 using Leave_Management.Data;
 using Leave_Management.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace Leave_Management.Controllers
 {
@@ -26,11 +26,13 @@ namespace Leave_Management.Controllers
             _userManager = userManager;
             _mapper = mapper;
         }
+
         // GET: LeaveRequests
         [Authorize(Roles = "Administrator")]
         public ActionResult Index()
         {
-            var leaveRequest = _uow.LeaveRequest.GetAll(includeProperties: "LeaveType", includeProperty: "RequestingEmployee", includeProperte: "ApprovedBy");
+            var leaveRequest = _uow.LeaveRequest.GetAll(includeProperties: "LeaveType",
+                includeProperty: "RequestingEmployee", includeProperte: "ApprovedBy");
             var leaveRequestModel = _mapper.Map<List<LeaveRequestVm>>(leaveRequest);
             var model = new AdminLeaveRequestVm
             {
@@ -40,22 +42,77 @@ namespace Leave_Management.Controllers
                 RejectedRequest = leaveRequestModel.Count(x => x.Approved == false),
                 LeaveRequest = leaveRequestModel
             };
-            return View();
+            return View(model);
+        }
+        public async Task<ActionResult> Details(int id)
+        {
+            var leaveRequest = await _uow.LeaveRequest.GetAllWithThreeEntity((x => x.Id == id), includeProperties: "ApprovedBy", includeProperty: "RequestingEmployee", includeProperte: "LeaveType");
+            var model = _mapper.Map<LeaveRequestVm>(leaveRequest);
+            return View(model);
         }
 
-        // GET: LeaveRequests/Details/5
-        public ActionResult Details(int id)
+
+        public async Task<ActionResult> ApproveRequest(int id)
         {
-            return View();
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                var leaveRequest = await _uow.LeaveRequest.Get(id);
+                var employeeId = leaveRequest.RequestingEmployeeId;
+                var leaveTypeId = leaveRequest.LeaveTypeId;
+                var allocation = await _uow.LeaveAllocation.GetAllWithTwoEntity((x =>
+                    x.EmployeeId == employeeId && x.Period == DateTime.Now.Year &&
+                    x.LeaveType.Id == leaveTypeId));
+                int daysRequested = (int)(leaveRequest.EndDate - leaveRequest.StartDate).TotalDays;
+                //allocation.NumberOfDays -= daysRequested;
+                allocation.NumberOfDays = allocation.NumberOfDays - daysRequested;
+
+                leaveRequest.Approved = true;
+                leaveRequest.ApprovedById = user.Id;
+                leaveRequest.DateActioned = DateTime.Now;
+
+                _uow.LeaveRequest.Update(leaveRequest);
+                _uow.LeaveAllocation.Update(allocation);
+                _uow.Save();
+                return RedirectToAction(nameof(Index));
+
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction(nameof(Index));
+            }
         }
+
+        public async Task<ActionResult> RejectRequest(int id)
+        {
+            try
+            {
+                var user = await _userManager.GetUserAsync(User);
+                var leaveRequest = await _uow.LeaveRequest.Get(id);
+                leaveRequest.Approved = false;
+                leaveRequest.ApprovedById = user.Id;
+                leaveRequest.DateActioned = DateTime.Now;
+
+                _uow.LeaveRequest.Update(leaveRequest);
+                _uow.Save();
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                return RedirectToAction(nameof(Index));
+            }
+        }
+
 
         public ActionResult MyLeave()
         {
             var employee = _userManager.GetUserAsync(User).Result;
-            var employeeid = employee.Id;
-            var employeeAllocation = _uow.LeaveAllocation.GetAll(includeProperties: "LeaveType").Where(x => x.EmployeeId == employeeid && x.Period == DateTime.Now.Year)
+            var employeeId = employee.Id;
+            var employeeAllocation = _uow.LeaveAllocation.GetAll(includeProperties: "LeaveType")
+                .Where(x => x.EmployeeId == employeeId && x.Period == DateTime.Now.Year)
                 .ToList();
-            var employeeRequest = _uow.LeaveRequest.GetAll((x => x.RequestingEmployeeId == employeeid), includeProperties: "LeaveType", includeProperty: "RequestingEmployee", includeProperte: "ApprovedBy");
+            var employeeRequest = _uow.LeaveRequest.GetAll((x => x.RequestingEmployeeId == employeeId),
+                includeProperties: "LeaveType", includeProperty: "RequestingEmployee", includeProperte: "ApprovedBy");
             var employeeAllocationModel = _mapper.Map<List<LeaveAllocationVm>>(employeeAllocation);
             var employeeRequestModel = _mapper.Map<List<LeaveRequestVm>>(employeeRequest);
 
@@ -68,9 +125,9 @@ namespace Leave_Management.Controllers
             return View(model);
         }
 
-        public ActionResult CancelRequest(int id)
+        public async Task<IActionResult> CancelRequest(int id)
         {
-            var leaveRequest = _uow.LeaveRequest.Get(id);
+            var leaveRequest = await _uow.LeaveRequest.Get(id);
             leaveRequest.Cancelled = true;
             _uow.LeaveRequest.Update(leaveRequest);
             _uow.Save();
@@ -78,7 +135,7 @@ namespace Leave_Management.Controllers
         }
 
         // GET: LeaveRequests/Upsert
-        public ActionResult Upsert()
+        public IActionResult Upsert()
         {
             var leavetypes = _uow.LeaveType.GetAll();
             var leavetypesItem = leavetypes.Select(x => new SelectListItem
@@ -96,41 +153,46 @@ namespace Leave_Management.Controllers
         // POST: LeaveRequests/Upsert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public ActionResult Upsert(CreateLeaveRequestVm collection)
+        public async Task<IActionResult> Upsert(CreateLeaveRequestVm collection)
         {
             try
             {
                 var startDate = Convert.ToDateTime(collection.StartDate);
                 var endDate = Convert.ToDateTime(collection.EndDate);
-                var leavetypes = _uow.LeaveType.GetAll();
-                var leavetypesItem = leavetypes.Select(x => new SelectListItem
+                var employee = await _userManager.GetUserAsync(User);
+
+                var allocation = await _uow.LeaveAllocation.GetAllWithTwoEntity((x =>
+                    x.EmployeeId == employee.Id && x.Period == DateTime.Now.Year &&
+                    x.LeaveType.Id == collection.LeaveTypeId));
+
+                int dayRequested = (int)(endDate - startDate).TotalDays;
+
+                var leaveTypes = _uow.LeaveType.GetAll();
+                var leaveTypesItem = leaveTypes.Select(x => new SelectListItem
                 {
                     Text = x.Name,
                     Value = x.Id.ToString()
                 });
-                collection.LeaveTypes = leavetypesItem;
+                collection.LeaveTypes = leaveTypesItem;
+
+                if (allocation == null)
+                {
+                    ModelState.AddModelError("", "You Have No Days Left");
+                }
+                if (DateTime.Compare(startDate, endDate) > 1)
+                {
+                    ModelState.AddModelError("", "Start Date cannot be further in the future than the End Date");
+                }
+                if (dayRequested > allocation.NumberOfDays)
+                {
+                    ModelState.AddModelError("", "You Do Not Sufficient Days For This Request");
+                }
                 if (!ModelState.IsValid)
                 {
                     return View(collection);
                 }
 
-                if (DateTime.Compare(startDate, endDate) > 1)
-                {
-                    return View(collection);
-                }
-
-                var employee = _userManager.GetUserAsync(User).Result;
-                var allocation = _uow.LeaveAllocation.GetAllWithTwoEntity((x =>
-                    x.EmployeeId == employee.Id && x.Period == DateTime.Now.Year &&
-                    x.LeaveType.Id == collection.LeaveTypeId));
-
-                int dayRequested = (int)(endDate - startDate).TotalDays;
-                if (dayRequested > allocation.NumberOfDays)
-                {
-                    return View(collection);
-                }
-
-                var leaveRequest = new LeaveRequestVm
+                var leaveRequestVm = new LeaveRequestVm
                 {
                     RequestingEmployeeId = employee.Id,
                     StartDate = startDate,
@@ -142,25 +204,21 @@ namespace Leave_Management.Controllers
                     RequestComments = collection.RequestComments
                 };
 
-                var leaverequest = _mapper.Map<LeaveRequest>(leaveRequest);
-                _uow.LeaveRequest.Create(leaverequest);
+                var leaveRequest = _mapper.Map<LeaveRequest>(leaveRequestVm);
+                _uow.LeaveRequest.Create(leaveRequest);
                 _uow.Save();
-                return RedirectToAction(nameof(Index), "Home");
+                return RedirectToAction(nameof(MyLeave));
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return View(collection);
             }
         }
 
-        // GET: LeaveRequests/Edit/5
-        public ActionResult Edit(int id)
+        public IActionResult GetAll()
         {
-            return View();
-        }
-        public ActionResult GetAll()
-        {
-            var leaveRequest = _uow.LeaveRequest.GetAll(includeProperties: "LeaveType", includeProperty: "RequestingEmployee", includeProperte: "ApprovedBy");
+            var leaveRequest = _uow.LeaveRequest.GetAll(includeProperties: "LeaveType",
+                includeProperty: "RequestingEmployee", includeProperte: "ApprovedBy");
             var leaveRequestModel = _mapper.Map<List<LeaveRequestVm>>(leaveRequest);
             var model = new AdminLeaveRequestVm
             {
@@ -171,45 +229,6 @@ namespace Leave_Management.Controllers
                 LeaveRequest = leaveRequestModel
             };
             return Json(new { data = model });
-        }
-        // POST: LeaveRequests/Edit/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Edit(int id, IFormCollection collection)
-        {
-            try
-            {
-                // TODO: Add update logic here
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: LeaveRequests/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: LeaveRequests/Delete/5
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                // TODO: Add delete logic here
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
         }
     }
 }

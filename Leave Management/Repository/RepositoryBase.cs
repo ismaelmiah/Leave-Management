@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 namespace Leave_Management.Repository
 {
@@ -24,13 +25,13 @@ namespace Leave_Management.Repository
         /// Generic Added Entity
         /// </summary>
         /// <param name="entity"></param>
-        public void Create(T entity)
+        public async void Create(T entity)
         {
-            dbSet.Add(entity);
+            await dbSet.AddAsync(entity);
         }
-        public T Get(int id)
+        public async Task<T> Get(int id)
         {
-            return dbSet.Find(id);
+            return await dbSet.FindAsync(id);
         }
 
         public IEnumerable<T> GetAll(Expression<Func<T, bool>> filter = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, string includeProperties = null, string includeProperty = null, string includeProperte = null)
@@ -75,7 +76,7 @@ namespace Leave_Management.Repository
         }
 
 
-        public T GetFirstOrDefault(Expression<Func<T, bool>> filter = null, string includeProperties = null)
+        public async Task<T> GetFirstOrDefault(Expression<Func<T, bool>> filter = null, string includeProperties = null)
         {
             IQueryable<T> query = dbSet;
 
@@ -91,7 +92,7 @@ namespace Leave_Management.Repository
                     query = query.Include(item);
                 }
             }
-            return query.FirstOrDefault();
+            return await query.FirstOrDefaultAsync();
         }
 
 
@@ -105,7 +106,7 @@ namespace Leave_Management.Repository
             dbSet.Update(entity);
         }
 
-        public T GetAllWithTwoEntity(Expression<Func<T, bool>> filter = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, string includeProperties = null, string includeProperty = null)
+        public async Task<T> GetAllWithTwoEntity(Expression<Func<T, bool>> filter = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, string includeProperties = null, string includeProperty = null)
         {
             IQueryable<T> query = dbSet;
             if (includeProperties != null)
@@ -123,7 +124,34 @@ namespace Leave_Management.Repository
                 }
             }
 
-            return query.FirstOrDefault(filter);
+            return await query.FirstOrDefaultAsync(filter);
+        }
+        public async Task<T> GetAllWithThreeEntity(Expression<Func<T, bool>> filter = null, Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null, string includeProperties = null, string includeProperty = null, string includeProperte = null)
+        {
+            IQueryable<T> query = dbSet;
+            if (includeProperties != null)
+            {
+                foreach (var item in includeProperties.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(item);
+                }
+            }
+            if (includeProperty != null)
+            {
+                foreach (var item in includeProperty.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(item);
+                }
+            }
+            if (includeProperte != null)
+            {
+                foreach (var item in includeProperte.Split(new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                {
+                    query = query.Include(item);
+                }
+            }
+
+            return await query.FirstOrDefaultAsync(filter);
         }
     }
 }
