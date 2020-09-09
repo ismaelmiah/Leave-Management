@@ -11,7 +11,7 @@
 - Manage Packages with NuGet Manager
 - Implement Website Layout using AdminLTE Theme
 
-![Leave-Management](https://pasteboard.co/JqhNuKf.png)
+![Leave management](https://user-images.githubusercontent.com/29182508/92605093-1e624780-f2d3-11ea-83db-bd5e8c81f649.png)
 
 # To Configure For Local Use
 - Clone Repository To Local Computer
