@@ -15,10 +15,11 @@ Leave Management project is a .NET Core web application. When developing this ap
 
 - Clone Repository To Local Computer
 - Open Project in Visual Studio
-- Edit "DefaultConnection" to point to preferred database
+- Edit "DefaultConnection" to point to the preferred database
 - Open Package Console Manager and run the command "Update-Database"
-- When completed, Run Website in Visual Studio to seed default Admin User
+- When completed, Run Website in Visual Studio to seed the default Admin User
 - Login as admin user using: Username: admin@localhost.com | Password: Password1234!
+- Create some leave types, if already not created, and before applying for leave make sure leave-allocated from admin.
 
 ## Design Diagram
 ### Entity–relationship Diagram model
