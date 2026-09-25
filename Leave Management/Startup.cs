@@ -37,7 +37,7 @@ namespace Leave_Management
 
             //Add references for Repository and Contracts to Startup files
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddAutoMapper(typeof(Maps));
+            services.AddAutoMapper(cfg => cfg.AddProfile<Maps>());
 
             services.AddControllersWithViews()
                 .AddNewtonsoftJson(options =>
