@@ -1,67 +1,99 @@
-﻿using Leave_Management.Data;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Leave_Management.Data;
 using Microsoft.AspNetCore.Identity;
 
 namespace Leave_Management
 {
     public static class SeedData
     {
-        public static void Seed(
+        public static async Task SeedAsync(
             RoleManager<IdentityRole> roleManager,
             UserManager<Employee> userManager)
         {
-            SeedRoles(roleManager);
-            SeedUsers(userManager);
+            await SeedRolesAsync(roleManager);
+            await SeedUsersAsync(userManager);
         }
 
-        private static void SeedUsers(UserManager<Employee> userManager)
+        private static async Task SeedRolesAsync(
+            RoleManager<IdentityRole> roleManager)
         {
-            if (userManager.FindByNameAsync("admin@localhost.com").Result == null)
+            string[] roles =
             {
-                var user = new Employee
-                {
-                    UserName = "admin@localhost.com",
-                    Email = "admin@localhost.com"
-                };
-                var result = userManager.CreateAsync(user, "P@ssword1").Result;
-                if (result.Succeeded)
-                {
-                    userManager.AddToRoleAsync(user, "Administrator").Wait();
-                }
-            }
-            if (userManager.FindByNameAsync("employee@localhost.com").Result == null)
+                "Administrator",
+                "Employee"
+            };
+
+            foreach (var roleName in roles)
             {
-                var user = new Employee
+                if (!await roleManager.RoleExistsAsync(roleName))
                 {
-                    UserName = "employee@localhost.com",
-                    Email = "employee@localhost.com"
-                };
-                var result = userManager.CreateAsync(user, "P@ssword1").Result;
-                if (result.Succeeded)
-                {
-                    userManager.AddToRoleAsync(user, "Employee").Wait();
+                    var result = await roleManager.CreateAsync(
+                        new IdentityRole(roleName));
+
+                    if (!result.Succeeded)
+                    {
+                        throw new Exception(
+                            $"Failed to create role '{roleName}': " +
+                            string.Join(", ", result.Errors.Select(e => e.Description)));
+                    }
                 }
             }
         }
 
-        private static void SeedRoles(RoleManager<IdentityRole> roleManager)
+        private static async Task SeedUsersAsync(
+            UserManager<Employee> userManager)
         {
-            if (!roleManager.RoleExistsAsync("Administrator").Result)
-            {
-                var role = new IdentityRole
-                {
-                    Name = "Administrator"
-                };
+            await CreateUserAsync(
+                userManager,
+                "admin@localhost.com",
+                "Administrator");
 
-                var result = roleManager.CreateAsync(role).Result;
+            await CreateUserAsync(
+                userManager,
+                "employee@localhost.com",
+                "Employee");
+        }
+
+        private static async Task CreateUserAsync(
+            UserManager<Employee> userManager,
+            string email,
+            string role)
+        {
+            var user = await userManager.FindByNameAsync(email);
+
+            if (user != null)
+            {
+                return;
             }
-            if (!roleManager.RoleExistsAsync("Employee").Result)
-            {
-                var role = new IdentityRole
-                {
-                    Name = "Employee"
-                };
 
-                var result = roleManager.CreateAsync(role).Result;
+            user = new Employee
+            {
+                UserName = email,
+                Email = email
+            };
+
+            var result = await userManager.CreateAsync(
+                user,
+                "P@ssword1");
+
+            if (!result.Succeeded)
+            {
+                throw new Exception(
+                    $"Failed to create user '{email}': " +
+                    string.Join(", ", result.Errors.Select(e => e.Description)));
+            }
+
+            var roleResult = await userManager.AddToRoleAsync(
+                user,
+                role);
+
+            if (!roleResult.Succeeded)
+            {
+                throw new Exception(
+                    $"Failed to assign role '{role}' to '{email}': " +
+                    string.Join(", ", roleResult.Errors.Select(e => e.Description)));
             }
         }
     }

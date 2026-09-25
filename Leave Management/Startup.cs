@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using AutoMapper;
 using Leave_Management.Contracts;
 using Leave_Management.Data;
@@ -48,22 +49,21 @@ namespace Leave_Management
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(
-            IApplicationBuilder app,
-            IWebHostEnvironment env,
-            RoleManager<IdentityRole> roleManager,
-            UserManager<Employee> userManager)
+    IApplicationBuilder app,
+    IWebHostEnvironment env,
+    RoleManager<IdentityRole> roleManager,
+    UserManager<Employee> userManager)
         {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
-                app.UseDatabaseErrorPage();
             }
             else
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
@@ -72,14 +72,17 @@ namespace Leave_Management
             app.UseAuthentication();
             app.UseAuthorization();
 
-            //Initialize User Roles
-            SeedData.Seed(roleManager, userManager);
+            SeedData
+                .SeedAsync(roleManager, userManager)
+                .GetAwaiter()
+                .GetResult();
 
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
+
                 endpoints.MapRazorPages();
             });
         }
