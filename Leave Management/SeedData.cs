@@ -15,7 +15,6 @@ namespace Leave_Management
 
         private static void SeedUsers(UserManager<Employee> userManager)
         {
-            var users = userManager.GetUsersInRoleAsync("Employee").Result;
             if (userManager.FindByNameAsync("admin@localhost.com").Result == null)
             {
                 var user = new Employee
@@ -27,6 +26,19 @@ namespace Leave_Management
                 if (result.Succeeded)
                 {
                     userManager.AddToRoleAsync(user, "Administrator").Wait();
+                }
+            }
+            if (userManager.FindByNameAsync("employee@localhost.com").Result == null)
+            {
+                var user = new Employee
+                {
+                    UserName = "employee@localhost.com",
+                    Email = "employee@localhost.com"
+                };
+                var result = userManager.CreateAsync(user, "P@ssword1").Result;
+                if (result.Succeeded)
+                {
+                    userManager.AddToRoleAsync(user, "Employee").Wait();
                 }
             }
         }
